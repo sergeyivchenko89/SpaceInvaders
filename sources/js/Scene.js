@@ -12,6 +12,11 @@ var Scene = function() {
 	//visible elements
 	var boat;
 
+	//intervals IDs
+	var intervalsIDs = {
+		boatTimerId : 0
+	};
+
 	//public methods
 	this.build = function () {
 
@@ -111,53 +116,63 @@ var Scene = function() {
 
 	var bindEvents = function () {
 
+		var step;
+
 		//События для управления кораблем
-		window.addEventListener(
-			'keyup',
-			function (event) {
-				switch(event.keyCode) {
-				case 37 :
-					console.log('keyup To left');
-				break;
-				break;
-				case 39 :
-					console.log('keyup To right');
+		window.onkeyup = function (event) {
+
+			switch (event.keyCode) {
+				case 37:
+				case 39:
+					step = 0;
+					clearInterval(intervalsIDs.boatIntervalId);
 				break;
 			}
-			},
-			false
-		);
 
-		window.addEventListener(
-			'keydown',
-			function (event) {
-				switch(event.keyCode) {
+			return false;
+		};
+
+		window.onkeydown = function (event) {
+
+			switch(event.keyCode) {
 				case 37 :
 					console.log('keydown To left');
+					step = -1;
 				break;
 				case 39 :
 					console.log('keydown To right');
+					step = 1;
 				break;
+				default:
+					return;
 			}
-			},
-			false
-		);
+
+			moveBoat(step);
+
+			return false;
+		};
 	};
 
 	var moveBoat = function (step) {
-		setInterval(function () {
+
+		intervalsIDs.boatTimerId = setTimeout(function tick() {
 			currentLeftValue += step;
 			redrawCanvas();
-		}, 1000);
+
+			//intervalsIDs.boatTimerId = setTimeout(tick, 10);
+		}, 1);
 	};
 
 	var redrawCanvas = function () {
+		//Context preparing
 		var ctx = canvas.getContext('2d');
 		ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
+		//Draw default elements
 		fillCanvas();
 		drawStarrySky();
 
+		//Draw boat
 		drawBoat();
 	}
 
