@@ -6,6 +6,7 @@ window.onload = function () {
 	scene
 		.setSize(1024, 768)
 		.setStarsCount(200)
+		.setBoat(new Boat())
 		.build();
 
 }
