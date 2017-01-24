@@ -4,7 +4,7 @@ window.onload = function () {
 
 	var scene = new Scene();
 	scene
-		.setSize(1920, 1080)
+		.setSize(1024, 768)
 		.setStarsCount(200)
 		.build();
 
