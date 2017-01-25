@@ -1,60 +1,107 @@
 var Boat = function () {
 
 	var boatView;
-	var direction;
-	var stepMovement = 10;
+	var step = 10;
+	var leftSpace = -1;
+	var maxLeftSpace;
+	
 
-	this.init();
+	var self = this;
 
-	this.bindEvents();
-}
+	/* public methods */
 
-Boat.prototype.init = function () {
-	boatView = document.createElement('img');
-	boatView.id = 'boat';
-	boatView.src = '../img/boat_41x25.png';
-	boatView.style.position = 'absolute';
-	boatView.style.display = 'block';
-};
-
-Boat.prototype.getView = function () {	
-	return boatView;
-};
-
-Boat.prototype.getWidth = function () {
-	return boatView.width;
-};
-
-Boat.prototype.getHeight = function () {
-	return boatView.height;
-};
-
-Boat.prototype.bindEvents = function () {
-
-	window.onkeyup = function (event) {
-		switch (event.keyCode) {
-			case 37:
-			case 39:
-				direction = 0;
-			break;
-		}
+	this.getView = function () {	
+		return boatView;
 	};
 
-	window.onkeydown = function (event) {
+	this.getWidth = function () {
+		return boatView.width;
+	};
+
+	this.getHeight = function () {
+		return boatView.height;
+	};
+
+	this.setLeft = function (value) {
+		leftSpace = value;
+	}
+
+	this.getLeft = function () {
+		return leftSpace;
+	};
+
+	this.setMaxLeftSpace = function (value) {
+		maxLeftSpace = value;
+	};
+
+	this.getMaxLeftSpace = function () {
+		return maxLeftSpace;
+	};
+
+
+	/* private methods */
+
+	var init = function () {
+		boatView = document.createElement('img');
+		boatView.id = 'boat';
+		boatView.src = '../img/boat_41x25.png';
+		boatView.style.position = 'absolute';
+		boatView.style.display = 'block';
+	};
+
+	var bindEvents = function () {
+
+		window.onkeydown = onKeyDown;
+
+	};
+
+	var onKeyDown = function (event) {
+
+		var direction;
+
 		switch (event.keyCode) {
 			case 37:
 				direction = -1;
 			break;
+			case 38 :
+				shoot();
+			break;
 			case 39:
 				direction = 1;
 			break;
+			default:
+				return;
 		};
 
-		onBoatMoved();
+		moveTo(direction);
 	};
 
-};
+	var moveTo = function (direction) {
 
-Boat.prototype.onBoatMoved = function () {
+		if (
+			leftSpace === maxLeftSpace && direction > 0 || 
+			leftSpace === 0 && direction < 0
+		) {
+			return;
+		}
 
-};
+		leftSpace += direction * step;
+
+		if (leftSpace > maxLeftSpace) {
+			leftSpace = maxLeftSpace;
+		} else if (leftSpace < 0) {
+			leftSpace = 0;
+		}
+
+		self.getView().style.left = leftSpace + 'px';
+	}
+
+	var shoot = function () {
+		console.log(self.getView());
+	}
+
+	//init part
+	init();
+
+	bindEvents();
+}

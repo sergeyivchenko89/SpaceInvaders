@@ -1,111 +1,129 @@
 var Scene = function() {
 
 	//Init canvas
-	this.canvas = document.createElement('canvas');
-	this.canvas.width = 1024;
-	this.canvas.height = 768;
+	var self = this;
+	var canvas = document.createElement('canvas');
+	canvas.width = 1024;
+	canvas.height = 768;
 
-	this.starsCount = 100;
+	var starsCount = 100;
 	this.currentLeftValue;
-	this.stars = [];
-	this.boatInstance;
+	var stars = [];
+	var boatInstance;
+	var requestAnimationId = 0;
 
-	this.bindEvents();
-}
+	//public methods
 
-Scene.prototype.build = function () {
-	this.redrawCanvas();
+	this.build = function () {
 
-	document.body.insertBefore(this.canvas, document.body.firstChild);
-};
+		redrawCanvas();
 
-Scene.prototype.setStarsCount = function (count) {
-	this.starsCount = count;
-	return this;
-};
+		document.body.insertBefore(canvas, document.body.firstChild);
 
-Scene.prototype.setSize = function (width, height) {
-	this.canvas.width = width;
-	this.canvas.height = height;
-	return this;
-};
+		startGame();
+	};
 
-Scene.prototype.setBoat = function (boat) {
-	this.boatInstance = boat;
-	return this;
-}
+	this.setSize = function (width, height) {
+		canvas.width = width;
+		canvas.height = height;
+		return this;
+	};
 
-Scene.prototype.redrawCanvas = function () {
-	//Context preparing
-	this
-		.getContext()
-		.clearRect(0, 0, this.canvas.width, this.canvas.height);
+	this.setStarsCount = function (count) {
+		starsCount = count;
+		return this;
+	};
 
-	//Draw default elements
-	this.fillCanvas();
-	this.drawStarrySky();
+	this.setBoat = function (boat) {
+		boatInstance = boat;
 
-	//Draw boat
-	this.drawBoat();
-}
+		boatInstance.setMaxLeftSpace(canvas.width - boat.getWidth());
 
-Scene.prototype.drawBoat = function () {
-
-	if (!this.boatInstance) {
-		return;
+		return this;
 	}
 
-	var startX = (this.canvas.width - this.boatInstance.getWidth()) / 2;
-	var startY = this.canvas.height - 2 * this.boatInstance.getHeight();
-		
-	//link boat to canvas
-	this
-		.getContext()
-		.drawImage(this.boatInstance.getView(), startX, startY);
-}
+	//private metods
 
-Scene.prototype.drawStarrySky = function () {
+	var startGame = function () {
 
-	var ctx = this.getContext();
-	ctx.fillStyle = '#ffffff';
+		redrawCanvas();
 
-	for (var i = 0; i < this.starsCount; i++) {
-		var starX;
-		var starY;
+		requestAnimationId = window.requestAnimationFrame(function () {
+			startGame();
+		});
+	};
 
-		if (!!this.stars[i]) {
-			starX = stars[i].x;
-			starY = stars[i].y;
-		} else {
-			starX = Math.floor(Math.random() * this.canvas.width + 1);
-			starY = Math.floor(Math.random() * this.canvas.height + 1);
-			this.stars.push({
-				x : starX ,
-				y : starY
-				});
+	var stopGame = function () {
+		window.cancelAnimationFade(requestAnimationId);
+	};
+
+	var drawStarrySky = function () {
+
+		var ctx = getContext();
+		ctx.fillStyle = '#ffffff';
+
+		for (var i = 0; i < starsCount; i++) {
+			var starX;
+			var starY;
+
+			if (!!stars[i]) {
+				starX = stars[i].x;
+				starY = stars[i].y;
+			} else {
+				starX = Math.floor(Math.random() * canvas.width + 1);
+				starY = Math.floor(Math.random() * canvas.height + 1);
+				stars.push({
+					x : starX ,
+					y : starY
+					});
+			}
+
+			ctx.beginPath();
+			ctx.arc(starX, starY, 1, 0, 2 * Math.PI);
+			ctx.fill();
+		}
+	};
+
+	var redrawCanvas = function () {
+		//Context preparing
+		getContext().clearRect(0, 0, canvas.width, canvas.height);
+
+		//Draw default elements
+		fillCanvas();
+		drawStarrySky();
+
+		//Draw boat
+		drawBoat();
+	};
+
+	var getContext = function () {
+		return canvas.getContext('2d');
+	};
+
+	var fillCanvas = function () {
+		var ctx = getContext();
+		ctx.fillStyle = '#000000';
+		ctx.fillRect(0, 0, canvas.width, canvas.height);
+	};
+
+	var drawBoat = function () {
+
+		if (!boatInstance) {
+			return;
 		}
 
-		ctx.beginPath();
-		ctx.arc(starX, starY, 1, 0, 2 * Math.PI);
-		ctx.fill();
-	}
-};
+		var startX = boatInstance.getLeft() > -1 ? 
+			boatInstance.getLeft() : 
+			(canvas.width - boatInstance.getWidth()) / 2;
+		var startY = canvas.height - 2 * boatInstance.getHeight();
 
-Scene.prototype.fillCanvas = function () {
-	var ctx = this.getContext();
-	ctx.fillStyle = '#000000';
-	ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-};
-
-Scene.prototype.bindEvents = function () {
-
-	if (!!this.boatInstance) {
-		this.boatInstance.onBoatMoved = function () {
-			console.log('onBoatmoved');
-		}
+		boatInstance
+			.setLeft(startX);
+			
+		//link boat to canvas
+		getContext().drawImage(boatInstance.getView(), startX, startY);
 	}
 }
 
-Scene.prototype.getContext = function () {
-	return this.canvas.getContext('2d');
-};
+
+
